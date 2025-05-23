@@ -368,6 +368,7 @@ jobs:
               echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> "$CONFIG_FILE"
               echo "CONFIG_ZRAM_WRITEBACK=y" >> "$CONFIG_FILE"
             fi
+            cat "arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"|grep "CRYPTO_"
             
       - name: Add SUSFS Configuration Settings
         env: 
