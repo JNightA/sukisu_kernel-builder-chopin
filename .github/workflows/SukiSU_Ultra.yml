@@ -314,6 +314,8 @@ jobs:
             echo '完成lz4k_oplus补丁'
 
       - name: LZ4KD&Lz4k_oplus配置
+        env: 
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         run: |
             echo "写入LZ4KD&ZSTDN config依赖"
             CONFIG_FILE="arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
@@ -364,6 +366,8 @@ jobs:
             fi
             
       - name: Add SUSFS Configuration Settings
+        env: 
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         run: |
           cd ${{ env.KERNEL_NAME }}
 
