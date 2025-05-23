@@ -317,10 +317,8 @@ jobs:
         env: 
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         run: |
-            cd ${{ env.KERNEL_NAME }}
-            ls ${{ env.KERNEL_NAME }}
             echo "写入LZ4KD&ZSTDN config依赖"
-            CONFIG_FILE="arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
+            CONFIG_FILE="${{ env.KERNEL_NAME }}/arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
 
             # if [ "${{ inputs.kernel_version }}" = "5.10" ]; then
               # echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
