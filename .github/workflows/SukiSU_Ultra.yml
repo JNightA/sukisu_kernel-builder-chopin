@@ -317,6 +317,8 @@ jobs:
         env: 
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         run: |
+            cd ${{ env.KERNEL_NAME }}
+            ls ${{ env.KERNEL_NAME }}
             echo "写入LZ4KD&ZSTDN config依赖"
             CONFIG_FILE="arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
 
@@ -329,17 +331,17 @@ jobs:
             # fi
 
             # if [ "${{ inputs.kernel_version }}" != "6.6" ] && [ "${{ inputs.kernel_version }}" != "5.10" ]; then
-              # sed -i 's/CONFIG_MODULE_SIG=y/CONFIG_MODULE_SIG=n/g' "$CONFIG_FILE"
+              sed -i 's/CONFIG_MODULE_SIG=y/CONFIG_MODULE_SIG=n/g' "$CONFIG_FILE"
               if grep -q "CONFIG_ZSMALLOC" -- "$CONFIG_FILE"; then
                   echo "提示：文件 $CONFIG_FILE 包含字符串 CONFIG_ZSMALLOC。"
                   sed -i 's/CONFIG_ZSMALLOC=m/CONFIG_ZSMALLOC=y/g' "$CONFIG_FILE"
               else
                   echo "警告：文件 $CONFIG_FILE 不包含字符串 CONFIG_ZSMALLOC。"
                   echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
-              # fi
+              fi
                 
               sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
-            fi
+            # fi
 
             # if [ "${{ inputs.kernel_version }}" = "6.6" ]; then
               # echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
