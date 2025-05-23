@@ -302,6 +302,9 @@ jobs:
             cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./lib/
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto/
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./lib/
+            echo "debug检查"
+            ls -a ./crypto
+            echo "debug检查结束"
           
             cp ../SukiSU_patch/other/zram/zram_patch/5.15/lz4kd.patch ./
             echo "正在打lz4kd补丁"
@@ -357,6 +360,7 @@ jobs:
             # fi
 
              if grep -q "CONFIG_ZSMALLOC=y" "$CONFIG_FILE" && grep -q "CONFIG_ZRAM=y" "$CONFIG_FILE"; then
+             echo "---开始添加lz4k配置项"
               echo "CONFIG_CRYPTO_LZ4HC=y" >> "$CONFIG_FILE"
               echo "CONFIG_CRYPTO_LZ4K=y" >> "$CONFIG_FILE"
               echo "CONFIG_CRYPTO_LZ4KD=y" >> "$CONFIG_FILE"
