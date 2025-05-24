@@ -30,6 +30,9 @@ jobs:
         id: generate-matrix
         run: |
           echo "CONFIGS<<EOF" >> $GITHUB_OUTPUT
+          ls -a ./
+          echo $(pwd)
+          echo $(dirname $0)
           jq -s '[.[][]]' Kernel/configs/*.config.json >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
@@ -316,7 +319,7 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
             echo '完成lz4k_oplus补丁'
             
-            cp ../lz4k_liqi_auto.patch ./
+            cp ../../lz4k_liqi_auto.patch ./
             echo "正在打lz4k_liqi补丁"
             patch -p1 -F 3 < lz4k_liqi_auto.patch || true
             echo '完成lz4k_liqi补丁'
