@@ -319,11 +319,14 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
             echo '完成lz4k_oplus补丁'
             
+            cat ./lib/Kconfig
+            
             cp $GITHUB_WORKSPACE/lz4kd_liqi_auto.patch ./
             echo "正在打lz4k_liqi补丁"
             patch -p1 -F 3 < lz4kd_liqi_auto.patch || true
             echo '完成lz4k_liqi补丁'
-
+            cat ./lib/Kconfig
+            
       - name: 🙊 LZ4KD&Lz4k_oplus配置
         run: |
             echo "写入LZ4KD&ZSTDN config依赖"
