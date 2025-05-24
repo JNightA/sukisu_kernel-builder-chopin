@@ -1,7 +1,7 @@
 diff -u a/lib/Kconfig b/lib/Kconfig
 --- a/lib/Kconfig
 +++ b/lib/Kconfig
-@@ -329,21 +329,27 @@
+@@ -328,21 +328,27 @@
  config LZO_DECOMPRESS
 	tristate
 
