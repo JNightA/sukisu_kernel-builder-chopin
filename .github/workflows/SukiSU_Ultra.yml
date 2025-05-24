@@ -9,7 +9,7 @@ on:
       kernel_version:
         required: true
         type: string
-        default:5.15
+        default: '5.15'
   schedule:
     - cron: "30 21 * * 5"
 
