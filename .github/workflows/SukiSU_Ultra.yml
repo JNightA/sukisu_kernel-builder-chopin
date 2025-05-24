@@ -358,8 +358,8 @@ jobs:
               # echo 'Android14_Bazel:已修复zram&zsmalloc'
             # el
             if [ "${{ inputs.kernel_version }}" = "5.10" ] || [ "${{ inputs.kernel_version }}" = "5.15" ]; then
-              rm "$CONFIG/common/android/gki_aarch64_modules"
-              touch "$CONFIG/common/android/gki_aarch64_modules"
+              rm "${{ env.KERNEL_NAME }}/android/gki_aarch64_modules"
+              touch "${{ env.KERNEL_NAME }}/android/gki_aarch64_modules"
               echo '5.10&5.15:已修复zram&zsmalloc'
             fi
 
