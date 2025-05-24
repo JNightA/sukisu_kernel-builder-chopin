@@ -5,6 +5,11 @@ on:
     # paths:
       # - ".github/workflows/build.yml"
   workflow_dispatch:
+    inputs:
+      kernel_version:
+        required: true
+        type: string
+        default:5.15
   schedule:
     - cron: "30 21 * * 5"
 
@@ -304,12 +309,12 @@ jobs:
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto/
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./lib/
           
-            cp ../SukiSU_patch/other/zram/zram_patch/5.15/lz4kd.patch ./
+            cp ../../SukiSU_patch/other/zram/zram_patch/${{ inputs.kernel_version }}/lz4kd.patch ./
             echo "正在打lz4kd补丁"
             patch -p1 -F 3 < lz4kd.patch || true
             echo '完成LZ4KD补丁'
 
-            cp ../SukiSU_patch/other/zram/zram_patch/5.15/lz4k_oplus.patch ./
+            cp ../SukiSU_patch/other/zram/zram_patch/${{ inputs.kernel_version }}/lz4k_oplus.patch ./
             echo "正在打lz4k_oplus补丁"
             patch -p1 -F 3 < lz4k_oplus.patch || true
             echo '完成lz4k_oplus补丁'
@@ -321,16 +326,16 @@ jobs:
             echo "写入LZ4KD&ZSTDN config依赖"
             CONFIG_FILE="${{ env.KERNEL_NAME }}/arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
 
-            # if [ "${{ inputs.kernel_version }}" = "5.10" ]; then
-              # echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
-              # echo "CONFIG_ZRAM=y" >> "$CONFIG_FILE"
-              # echo "CONFIG_MODULE_SIG=n" >> "$CONFIG_FILE"
-              # echo "CONFIG_CRYPTO_LZO=y" >> "$CONFIG_FILE"
-              # echo "CONFIG_ZRAM_DEF_COMP_LZ4KD=y" >> "$CONFIG_FILE"
-            # fi
+            if [ "${{ inputs.kernel_version }}" = "5.10" ]; then
+              echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
+              echo "CONFIG_ZRAM=y" >> "$CONFIG_FILE"
+              echo "CONFIG_MODULE_SIG=n" >> "$CONFIG_FILE"
+              echo "CONFIG_CRYPTO_LZO=y" >> "$CONFIG_FILE"
+              echo "CONFIG_ZRAM_DEF_COMP_LZ4KD=y" >> "$CONFIG_FILE"
+            fi
 
-            # if [ "${{ inputs.kernel_version }}" != "6.6" ] && [ "${{ inputs.kernel_version }}" != "5.10" ]; then
-              #sed -i 's/CONFIG_MODULE_SIG=y/CONFIG_MODULE_SIG=n/g' "$CONFIG_FILE"
+            if [ "${{ inputs.kernel_version }}" != "6.6" ] && [ "${{ inputs.kernel_version }}" != "5.10" ]; then
+              # sed -i 's/CONFIG_MODULE_SIG=y/CONFIG_MODULE_SIG=n/g' "$CONFIG_FILE"
               if grep -q "CONFIG_ZSMALLOC" -- "$CONFIG_FILE"; then
                   echo "提示：文件 $CONFIG_FILE 包含字符串 CONFIG_ZSMALLOC。"
                   sed -i 's/CONFIG_ZSMALLOC=m/CONFIG_ZSMALLOC=y/g' "$CONFIG_FILE"
@@ -340,22 +345,23 @@ jobs:
               fi
                 
               sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
-            # fi
+            fi
 
-            # if [ "${{ inputs.kernel_version }}" = "6.6" ]; then
-              # echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
-              # sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
-            # fi
+            if [ "${{ inputs.kernel_version }}" = "6.6" ]; then
+              echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
+              sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
+            fi
 
             # if [ "${{ inputs.android_version }}" = "android14" ] || [ "${{ inputs.android_version }}" = "android15" ]; then
               # sed -i 's/"drivers\/block\/zram\/zram\.ko",//g; s/"mm\/zsmalloc\.ko",//g' "$CONFIG/common/modules.bzl"
               # echo "CONFIG_MODULE_SIG_FORCE=n" >> "$CONFIG_FILE"
               # echo 'Android14_Bazel:已修复zram&zsmalloc'
-            # elif [ "${{ inputs.kernel_version }}" = "5.10" ] || [ "${{ inputs.kernel_version }}" = "5.15" ]; then
-              # rm "$CONFIG/common/android/gki_aarch64_modules"
-              # touch "$CONFIG/common/android/gki_aarch64_modules"
-              # echo '5.10&5.15:已修复zram&zsmalloc'
-            # fi
+            # el
+            if [ "${{ inputs.kernel_version }}" = "5.10" ] || [ "${{ inputs.kernel_version }}" = "5.15" ]; then
+              rm "$CONFIG/common/android/gki_aarch64_modules"
+              touch "$CONFIG/common/android/gki_aarch64_modules"
+              echo '5.10&5.15:已修复zram&zsmalloc'
+            fi
 
              if grep -q "CONFIG_ZSMALLOC=y" "$CONFIG_FILE" && grep -q "CONFIG_ZRAM=y" "$CONFIG_FILE"; then
               echo "CONFIG_CRYPTO_LZ4HC=y" >> "$CONFIG_FILE"
