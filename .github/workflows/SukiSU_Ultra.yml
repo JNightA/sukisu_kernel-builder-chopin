@@ -227,15 +227,13 @@ jobs:
             args="$args $key=$value"
           done < <(jq -r '.externalCommands | to_entries[] | "\(.key)=\(.value)"' <<< "$PARAMS")
 
-          echo "ARCH=$ARCH" >> $GITHUB_OUTPUT
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
           echo "ARGS=$args" >> $GITHUB_OUTPUT
 
           echo "🤔 $args"
 
       - name: 😋 设置内核
         working-directory: ${{ env.KERNEL_NAME }}
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
         run: |
           # Delete old KernelSU
@@ -251,7 +249,6 @@ jobs:
           
       - name: 😋 设置KSU susfs
         env: 
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
           SFS_BRANCH: ${{ matrix.CONFIG.KernelSUSFS.branches }}
         if: ${{ env.ENABLE_KERNELSU == 'true' && env.ENABLE_KERNELSU_SFS == 'true' }}
         run: |
@@ -301,7 +298,7 @@ jobs:
 
           #cat "$CONFIG_FILE"
 
-      - name: 复制源文件&应用LZ4KD&ZSTDN补丁
+      - name: 🙉 复制源文件&应用LZ4KD&ZSTDN补丁
         run: |
             cd ${{ env.KERNEL_NAME }}
             cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./include/linux/
@@ -318,10 +315,13 @@ jobs:
             echo "正在打lz4k_oplus补丁"
             patch -p1 -F 3 < lz4k_oplus.patch || true
             echo '完成lz4k_oplus补丁'
+            
+            cp ../lz4k_liqi_auto.patch ./
+            echo "正在打lz4k_liqi补丁"
+            patch -p1 -F 3 < lz4k_liqi_auto.patch || true
+            echo '完成lz4k_liqi补丁'
 
-      - name: LZ4KD&Lz4k_oplus配置
-        env: 
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+      - name: 🙊 LZ4KD&Lz4k_oplus配置
         run: |
             echo "写入LZ4KD&ZSTDN config依赖"
             CONFIG_FILE="${{ env.KERNEL_NAME }}/arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}"
@@ -372,9 +372,7 @@ jobs:
               echo "CONFIG_ZRAM_WRITEBACK=y" >> "$CONFIG_FILE"
             fi
             
-      - name: Add SUSFS Configuration Settings
-        env: 
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+      - name: 🙈 Add SUSFS Configuration Settings
         run: |
           cd ${{ env.KERNEL_NAME }}
 
@@ -413,10 +411,19 @@ jobs:
           make ${{ env.ARGS }}
           # tree ${{ env.OUT_DIR }}
 
+      - name: ✨ 修补 Image 文件 安卓12和安卓13
+        run: |
+            echo "Patching Image file..."
+            cd "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot"
+            curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch
+            chmod 777 patch
+            ./patch
+            rm -rf Image Image.gz
+            mv oImage Image
+            gzip -n -k -f -9 ./Image
+
       - name: 💛 Upload Image
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
@@ -425,8 +432,6 @@ jobs:
 
       - name: 💙 Upload Image.gz
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
@@ -435,8 +440,6 @@ jobs:
 
       - name: 💙 Upload Image.gz-dtb
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz-dtb
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
@@ -445,8 +448,6 @@ jobs:
 
       - name: 💜 Upload dtb
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtb
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
@@ -455,8 +456,6 @@ jobs:
 
       - name: ❤️ Upload dtbo.img
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
@@ -465,8 +464,6 @@ jobs:
 
       - name: ☢️ Upload output directory
         uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Output
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
@@ -476,7 +473,6 @@ jobs:
         if: ${{ env.USE_ANYKERNEL3 == 'true' }}
         env:
           PARAMS: "${{ toJSON(matrix.CONFIG.AnyKernel3) }}"
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
           if echo -n '${{ env.PARAMS }}' | jq -e 'has("custom")' > /dev/null; then
